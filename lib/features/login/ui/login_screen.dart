@@ -22,13 +22,13 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding:  EdgeInsets.symmetric(horizontal: 30.h, vertical: 30.w),
+          padding: EdgeInsets.symmetric(horizontal: 30.h, vertical: 30.w),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Welcome Back', style: TextStyles.font24BlueBold),
-                 verticalSpace(8),
+                verticalSpace(8),
                 Text(
                   "We're excited to have you back, can't wait to see what you've been up to.",
                   style: TextStyles.font14GrayRegular,
@@ -72,14 +72,15 @@ class LoginScreen extends StatelessWidget {
         );
 
         if (response?.user != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("✅ Login successful!")),
-          );
-Navigator.of(context).pushNamed(Routes.homeScreen);        }
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("✅ Login successful!")));
+          Navigator.of(context).pushNamed(Routes.homeScreen);
+        }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ Error: ${e.toString()}")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("❌ Error: ${e.toString()}")));
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -5,3 +5,13 @@ class Routes {
   static const String homeScreen = '/homeScreen';
   static const String authGate = '/AuthGate';
 }
+
+                     /////////////////////////////////
+// import 'package:flutter_supa/core/helpers/extentsions.dart';
+// import 'package:flutter_supa/core/routing/routes.dart';
+            //  Navigator.of(context).pushNamed(Routes.loginScreen);
+
+
+                     ////////////////////////////
+ // import 'package:flutter_supa/core/helpers/extentsions.dart';
+            //  context.pushNamed(Routes.loginScreen);
