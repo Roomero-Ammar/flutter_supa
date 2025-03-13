@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_supa/auth/auth_service.dart';
 import 'package:flutter_supa/core/helpers/spacing.dart';
+import 'package:flutter_supa/core/routing/routes.dart';
 import 'package:flutter_supa/core/theming/styles.dart';
 import 'package:flutter_supa/core/widgets/app_text_button.dart';
-import 'package:flutter_supa/features/login/ui/widgets/email_and_password.dart';
-
 import '../../login/ui/widgets/terms_and_conditions.dart';
 import 'widgets/already_have_account.dart';
+import 'widgets/signup_form.dart';
 
 
 class SignUpScreen extends StatelessWidget {
   SignUpScreen({super.key});
 
-  // ✅ إنشاء مفتاح النموذج للتحقق من صحة البيانات
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final AuthService _authService = AuthService();
 
-  // ✅ إنشاء Controllers للحقول النصية
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
@@ -23,10 +23,6 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Sign Up'),
-        backgroundColor: Colors.white,
-      ),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 30.w, vertical: 30.h),
@@ -46,33 +42,19 @@ class SignUpScreen extends StatelessWidget {
                 verticalSpace(36),
                 Column(
                   children: [
-                    EmailAndPassword(
-                  formKey: formKey, // ✅ تمرير مفتاح النموذج
-                  emailController: emailController, // ✅ تمرير الكونترولر
-                  passwordController: passwordController, // ✅ تمرير الكونترولر
-                ),
-                    
-                    // ✅ تمرير المفتاح والـ Controllers إلى الفورم
-                    // SignupForm(
-                    //   formKey: formKey,
-                    //   nameController: nameController,
-                    //   emailController: emailController,
-                    //   passwordController: passwordController,
-                    // ),
+                    SignupForm(
+                      formKey: formKey,
+                      nameController: nameController,
+                      emailController: emailController,
+                      passwordController: passwordController,
+                    ),
                     verticalSpace(40),
                     AppTextButton(
                       buttonText: "Create Account",
                       textStyle: TextStyles.font16WhiteSemiBold,
-                      onPressed: (){
-                    if (formKey.currentState!.validate()) {
-                      // ✅ إذا كانت البيانات صحيحة
-                      print("✅ البريد الإلكتروني: ${emailController.text}");
-                      print("✅ كلمة المرور: ${passwordController.text}");
-                    } else {
-                      // ❌ إذا كانت هناك حقول فارغة
-                      print("❌ يجب ملء جميع الحقول!");
-                    }
-                      }
+                      onPressed: () {
+                        validateThenSignup(context);
+                      },
                     ),
                     verticalSpace(16),
                     const TermsAndConditionsText(),
@@ -88,14 +70,29 @@ class SignUpScreen extends StatelessWidget {
     );
   }
 
-  void validateThenSignup() {
+  Future<void> validateThenSignup(BuildContext context) async {
     if (formKey.currentState!.validate()) {
-      // ✅ إذا كانت البيانات صحيحة، طباعة القيم أو إرسالها إلى الخادم
-      print("✅ Name: ${nameController.text}");
-      print("✅ Email: ${emailController.text}");
-      print("✅ Password: ${passwordController.text}");
+      try {
+        final response = await _authService.signUp(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+
+        if (response?.user != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("✅ Sign-up successful! Check your email.")),
+          );
+          Navigator.of(context).pushNamed(Routes.loginScreen);
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("❌ Error: ${e.toString()}")),
+        );
+      }
     } else {
-      print("❌ Please fill all fields correctly.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("❌ Please fill all fields correctly.")),
+      );
     }
   }
 }
