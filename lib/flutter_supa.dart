@@ -1,5 +1,6 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_supa/auth/auth_gate.dart';
 import 'package:flutter_supa/core/routing/app_router.dart';
 
 import 'core/routing/routes.dart';
@@ -20,7 +21,8 @@ class FlutterSupa extends StatelessWidget {
             scaffoldBackgroundColor: Colors.white,
           ),
           debugShowCheckedModeBanner: false,
-         initialRoute: Routes.loginScreen,
+          // home: const AuthGate(),
+        initialRoute: Routes.authGate,
           onGenerateRoute: appRouter.generateRoute,
         ));
   }

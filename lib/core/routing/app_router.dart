@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_supa/auth/auth_gate.dart';
 import 'package:flutter_supa/core/routing/routes.dart';
+import 'package:flutter_supa/features/home/ui/home_screen.dart';
 import 'package:flutter_supa/features/login/ui/login_screen.dart';
 import 'package:flutter_supa/features/sign_up/ui/sign_up_screen.dart';
 
@@ -13,6 +15,12 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const Placeholder(),
         );
+
+        case Routes.authGate: // إضافة AuthGate كصفحة رئيسية
+        return MaterialPageRoute(
+          builder: (_) => const AuthGate(),
+        );
+        
       case Routes.loginScreen:
         return MaterialPageRoute(
           builder: (_) =>  LoginScreen(),
@@ -23,7 +31,7 @@ class AppRouter {
         );
       case Routes.homeScreen:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(),
+          builder: (_) =>  HomeScreen(),
         );
       default:
         return null;
