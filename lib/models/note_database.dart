@@ -18,9 +18,15 @@ return response.map((note) => Note.fromMap(note)).toList();
   }
 
   // Edit an existing note
-  Future<void> updateNote(Note note) async {
-    await client.from('notes').update(note.toMap()).eq('id', note.id);
+ Future<void> updateNote(Note note) async {
+  if (note.id == null) {
+    print("Error: Cannot update a note without an ID.");
+    return;
   }
+
+  await client.from('notes').update(note.toMap()).eq('id', note.id!);
+}
+
 
   // Delete a note
   Future<void> deleteNote(int id) async { // تغيير id إلى int

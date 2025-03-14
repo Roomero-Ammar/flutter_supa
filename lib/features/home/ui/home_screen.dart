@@ -17,7 +17,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final NoteDatabase noteDatabase = NoteDatabase(Supabase.instance.client);
   List<Note> notes = [];
   bool isLoading = true; // Added loading state
-    final AuthService _authService = AuthService();
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -28,58 +28,56 @@ class _HomeScreenState extends State<HomeScreen> {
   // Load all notes
   Future<void> loadNotes() async {
     final fetchedNotes = await noteDatabase.fetchNotes();
-     print("Fetched Notes: ${fetchedNotes.length}");
+    print("Fetched Notes: ${fetchedNotes.length}");
     setState(() {
       notes = fetchedNotes;
       isLoading = false;
     });
   }
 
-  // Add a new note
-  Future<void> addNewNote() async {
-  print("Adding a new note..."); 
+  // Show dialog for adding/editing a note
+  Future<void> showNoteDialog({Note? note}) async {
+    TextEditingController titleController = TextEditingController(text: note?.title ?? '');
+    TextEditingController contentController = TextEditingController(text: note?.content ?? '');
 
-  final newNote = Note(
-    id: 0,
-    title: 'New Note',
-    content: 'Type here...',
-  //  createdAt: DateTime.now(),
-  );
-  
-  await noteDatabase.addNote(newNote);
-  print("Note added successfully!"); 
-  loadNotes();
-}
-
-
-  // Edit a note
-  Future<void> editNote(Note note) async {
-    TextEditingController titleController = TextEditingController(text: note.title);
-    TextEditingController contentController = TextEditingController(text: note.content);
-
-    showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Edit Note'),
+        title: Text(note == null ? 'Add Note' : 'Edit Note'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: titleController),
-            TextField(controller: contentController, maxLines: 5),
+            TextField(controller: titleController, decoration: const InputDecoration(labelText: 'Title')),
+            TextField(controller: contentController, decoration: const InputDecoration(labelText: 'Content'), maxLines: 5),
           ],
         ),
         actions: [
           TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
             onPressed: () async {
-              await noteDatabase.updateNote(
-                Note(
-                  id: note.id,
-                  title: titleController.text,
-                  content: contentController.text,
-                //  createdAt: note.createdAt,
-                ),
-              );
-              loadNotes();
+              if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                if (note == null) {
+                  // ✅ Create a new note with a unique ID
+                  final newNote = Note(
+                    id: DateTime.now().millisecondsSinceEpoch, // Generate a unique ID
+                    title: titleController.text,
+                    content: contentController.text,
+                  );
+                  await noteDatabase.addNote(newNote);
+                } else {
+                  // ✅ Update existing note
+                  final updatedNote = Note(
+                    id: note.id,
+                    title: titleController.text,
+                    content: contentController.text,
+                  );
+                  await noteDatabase.updateNote(updatedNote);
+                }
+                loadNotes();
+              }
               Navigator.pop(context);
             },
             child: const Text('Save'),
@@ -98,19 +96,17 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        
         title: const Text("Home"),
         actions: [
-          IconButton(
-  icon: Icon(Icons.refresh),
-  onPressed: loadNotes,
-),
-
+          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: loadNotes),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await _authService.signOut();
-            //  Navigator.of(context).pushNamed(Routes.loginScreen);
               context.pushNamed(Routes.loginScreen);
             },
           ),
@@ -125,17 +121,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 return ListTile(
                   title: Text(note.title),
                   subtitle: Text(note.content),
-                  onTap: () => editNote(note),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => deleteNote(note.id),
+                  onTap: () => showNoteDialog(note: note),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => showNoteDialog(note: note),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          if (note.id != null) {
+                            deleteNote(note.id!); // ✅ Ensure `id` is not null before deleting
+                          } else {
+                            print("Error: Cannot delete a note without an ID.");
+                          }
+                        },
+                      ),
+                    ],
                   ),
                 );
               },
             ),
-            
       floatingActionButton: FloatingActionButton(
-        onPressed: addNewNote,
+        onPressed: () => showNoteDialog(),
         child: const Icon(Icons.add),
       ),
     );

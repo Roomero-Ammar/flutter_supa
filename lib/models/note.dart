@@ -1,33 +1,29 @@
 class Note {
-  final int id; // تحويل id إلى int
+  final int? id; // ✅ id يمكن أن يكون null عند الإنشاء
   final String title;
   final String content;
-  final DateTime? createdAt;
 
   Note({
-    required this.id,
+    this.id, // ✅ جعله اختياريًا
     required this.title,
     required this.content,
-    this.createdAt,
   });
 
-  // Convert a Note object to a Map (for Supabase)
+  // ✅ تحويل Note إلى Map لإرساله إلى Supabase
   Map<String, dynamic> toMap() {
     return {
-      'id': id, // id الآن من نوع int
+      if (id != null) 'id': id, // ✅ لا نرسل id إذا كان null
       'title': title,
       'content': content,
-      // 'created_at': createdAt?.toIso8601String(),
     };
   }
 
-  // Create a Note object from a Map (from Supabase)
+  // ✅ إنشاء Note من Map عند جلب البيانات من Supabase
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
-      id: map['id'] is String ? int.parse(map['id']) : map['id'], // تحويل id من String إلى int
+      id: map['id'], // ✅ Supabase سيملأ هذا تلقائيًا
       title: map['title'],
       content: map['content'],
-      createdAt: map['created_at'] != null ? DateTime.parse(map['created_at']) : null,
     );
   }
 }
