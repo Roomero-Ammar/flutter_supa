@@ -3,7 +3,9 @@ import 'package:flutter_supa/auth/auth_gate.dart';
 import 'package:flutter_supa/core/routing/routes.dart';
 import 'package:flutter_supa/features/home/ui/home_screen.dart';
 import 'package:flutter_supa/features/login/ui/login_screen.dart';
+import 'package:flutter_supa/features/onboarding/onboarding_screen.dart';
 import 'package:flutter_supa/features/sign_up/ui/sign_up_screen.dart';
+import 'package:flutter_supa/features/table/table_screen.dart';
 
 class AppRouter {
   Route? generateRoute(RouteSettings settings) {
@@ -13,12 +15,17 @@ class AppRouter {
     switch (settings.name) {
       case Routes.onBoardingScreen:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(),
+          builder: (_) => OnBoardingScreen(),
         );
 
         case Routes.authGate: // إضافة AuthGate كصفحة رئيسية
         return MaterialPageRoute(
           builder: (_) => const AuthGate(),
+        );
+        
+        case Routes.tableScreen: 
+        return MaterialPageRoute(
+          builder: (_) => const TableScreen(),
         );
         
       case Routes.loginScreen:

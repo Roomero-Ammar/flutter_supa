@@ -104,8 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
               themeProvider.toggleTheme(themeProvider.themeMode == ThemeMode.light);
             },
           ),
-          IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)),
           IconButton(icon: const Icon(Icons.refresh), onPressed: loadNotes),
+          IconButton(icon: const Icon(Icons.table_view), onPressed: ()
+          {
+            Navigator.pushNamed(context,Routes.tableScreen);
+          },),
+
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {

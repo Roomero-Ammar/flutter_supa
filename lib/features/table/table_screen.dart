@@ -3,14 +3,14 @@ import 'package:flutter_supa/models/note.dart';
 import 'package:flutter_supa/models/note_database.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class OnBoardingScreen extends StatefulWidget {
-  const OnBoardingScreen({super.key});
+class TableScreen extends StatefulWidget {
+  const TableScreen({super.key});
 
   @override
-  _OnBoardingScreenState createState() => _OnBoardingScreenState();
+  _TableScreenState createState() => _TableScreenState();
 }
 
-class _OnBoardingScreenState extends State<OnBoardingScreen> {
+class _TableScreenState extends State<TableScreen> {
   final NoteDatabase noteDatabase = NoteDatabase(Supabase.instance.client);
   List<Note> notes = [];
   bool isLoading = true;
