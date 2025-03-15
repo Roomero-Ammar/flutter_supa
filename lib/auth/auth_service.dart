@@ -60,4 +60,24 @@ return user?.email;
   bool isUserSignedIn() {
     return _supabase.auth.currentSession != null;
   }
+
+  // all data of current user
+    /// 🔹 استرجاع جميع بيانات المستخدم الحالي
+  Map<String, dynamic>? getCurrentUserData() {
+    final session = _supabase.auth.currentSession;
+    final user = session?.user;
+
+    if (user != null) {
+      return {
+        "ID": user.id,
+        "Email": user.email,
+      "Created At": user.createdAt != null ? DateTime.parse(user.createdAt!).toIso8601String() : "Unknown",
+        "User Metadata": user.userMetadata, // بيانات مثل الاسم ورقم الهاتف
+        "Access Token": session?.accessToken,
+        "Refresh Token": session?.refreshToken,
+        "Expires At": session?.expiresAt,
+      };
+    }
+    return null;
+  }
 }

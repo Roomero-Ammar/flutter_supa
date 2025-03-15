@@ -109,7 +109,10 @@ class _HomeScreenState extends State<HomeScreen> {
           {
             Navigator.pushNamed(context,Routes.tableScreen);
           },),
-
+ IconButton(icon: const Icon(Icons.man), onPressed: ()
+          {
+            Navigator.pushNamed(context,Routes.profileScreen);
+          },),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -126,8 +129,8 @@ class _HomeScreenState extends State<HomeScreen> {
               itemBuilder: (context, index) {
                 final note = notes[index];
                 return ListTile(
-                  title: Text(note.title),
-                  subtitle: Text(note.content),
+                  title: Text(note.title, style: const TextStyle(fontWeight: FontWeight.bold),),
+                  subtitle: Text(note.content, style: const TextStyle(fontWeight: FontWeight.bold),),
                   onTap: () => showNoteDialog(note: note),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,

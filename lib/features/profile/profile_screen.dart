@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_supa/auth/auth_service.dart';
 
-class OnBoardingScreen extends StatelessWidget {
+class ProfileScreen extends StatelessWidget {
   final AuthService _authService = AuthService();
 
   @override

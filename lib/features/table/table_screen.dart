@@ -50,16 +50,16 @@ class _TableScreenState extends State<TableScreen> {
               child: DataTable(
                 columnSpacing: 20.0,
                 columns: const [
-                  DataColumn(label: Text("ID")),
-                  DataColumn(label: Text("Title")),
-                  DataColumn(label: Text("Content")),
-                  DataColumn(label: Text("Delete")),
+                  DataColumn(label: Text("ID", style:  TextStyle(fontWeight: FontWeight.bold),)),
+                  DataColumn(label: Text("Title", style:  TextStyle(fontWeight: FontWeight.bold),)),
+                  DataColumn(label: Text("Content", style:  TextStyle(fontWeight: FontWeight.bold),)),
+                  DataColumn(label: Text("Delete", style:  TextStyle(fontWeight: FontWeight.bold),)),
                 ],
                 rows: notes.map((note) {
                   return DataRow(cells: [
-                    DataCell(Text(note.id.toString())),
-                    DataCell(Text(note.title)),
-                    DataCell(Text(note.content)),
+                    DataCell(Text(note.id.toString(),style: const TextStyle(fontWeight: FontWeight.bold),)),
+                    DataCell(Text(note.title, style: const TextStyle(fontWeight: FontWeight.bold),)),
+                    DataCell(Text(note.content, style: const TextStyle(fontWeight: FontWeight.bold),)),
                     DataCell(Row(
                       children: [
                        
