@@ -43,6 +43,34 @@ class AuthService {
       throw Exception(e.message);
     }
   }
+  // التحكم فى ظهور قيم محدده
+  String getSelectedCurrentUserData({List<String>? fields}) {
+  final session = _supabase.auth.currentSession;
+  final user = session?.user;
+
+  if (user != null) {
+    Map<String, String> data = {
+      "ID": user.id,
+      "Email": user.email?? "not found",
+      "Created At": user.createdAt != null ? DateTime.parse(user.createdAt!).toIso8601String() : "Unknown",
+      "User Metadata": user.userMetadata?.toString() ?? "None",
+      "Access Token": session?.accessToken ?? "Not Available",
+      "Refresh Token": session?.refreshToken ?? "Not Available",
+      "Expires At": session?.expiresAt?.toString() ?? "Not Available",
+    };
+
+    // 🔹 إذا لم يتم تحديد الحقول، نعيد كل البيانات
+    if (fields == null) {
+      return data.entries.map((e) => "${e.key}: ${e.value}").join("\n");
+    }
+
+    // 🔹 تصفية البيانات وإعادة فقط القيم المطلوبة
+    return fields.map((key) => "$key: ${data[key] ?? 'Not Available'}").join("\n");
+  }
+
+  return "No user logged in";
+}
+
 
   /// Get current user
   User? getCurrentUser() {
