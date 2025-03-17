@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_supa/core/helpers/spacing.dart';
 import 'package:flutter_supa/service_locator/upload_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -45,7 +46,7 @@ void _showFilesBottomSheet() {
         child: Column(
           children: [
             const Text(
-              "📂 الملفات المرفوعة",
+              "View Uploaded Files 📂",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             const Divider(),
@@ -99,6 +100,21 @@ void _showFilesBottomSheet() {
   );
 }
 
+void _deleteFile(String fileUrl) async {
+  bool success = await _uploadService.deleteFile(fileUrl);
+  if (success) {
+    setState(() {
+      _uploadedFiles.removeWhere((file) => file['url'] == fileUrl);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("✅ تم حذف الملف بنجاح!")),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("❌ فشل حذف الملف!")),
+    );
+  }
+}
 
 
   /// 🔹 اختيار ملفات متعددة
@@ -215,11 +231,12 @@ void _showFilesBottomSheet() {
               label: const Text("تصفح الملفات"),
             ),
             const Divider(),
-            const Text("📂 الملفات المرفوعة:", style: TextStyle(fontWeight: FontWeight.bold)),
-              Expanded(
-          child: _uploadedFiles.isEmpty
-              ? const Text("لا توجد ملفات مرفوعة")
-              : GridView.builder(
+            const Text("Uploaded Files 📂", style: TextStyle(fontWeight: FontWeight.bold)),
+            verticalSpace(10),
+     Expanded(
+  child: _uploadedFiles.isEmpty
+      ? const Text("لا توجد ملفات مرفوعة")
+      : GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 10,
@@ -229,31 +246,51 @@ void _showFilesBottomSheet() {
           itemBuilder: (context, index) {
             final file = _uploadedFiles[index];
             final fileType = file['type'] ?? "unknown";
-        
-         if (fileType == "image") {
-  return GestureDetector(
-    onTap: () => _openFile(file['url'] ?? ""),
-    child: Image.network(
-      file['url'] ?? "",
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return const Icon(Icons.broken_image, color: Colors.red);
-      },
-    ),
-  );
-}
-else {
-              return ListTile(
-                leading: _getFileIcon(fileType),
-                title: Text(file['name'] ?? "غير معروف"),
-                onTap: () => _openFile(file['url'] ?? ""),
+
+            if (fileType == "image") {
+              return Stack(
+                children: [
+                  GestureDetector(
+                    onTap: () => _openFile(file['url'] ?? ""),
+                    child: Image.network(
+                      file['url'] ?? "",
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Icon(Icons.broken_image, color: Colors.red);
+                      },
+                    ),
+                  ),
+                  Positioned(
+                    top: 5,
+                    right: 5,
+                    child: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteFile(file['url'] ?? ""),
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              return Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteFile(file['url'] ?? ""),
+                    ),
+                  ),
+                  ListTile(
+                    leading: _getFileIcon(fileType),
+                    title: Text(file['name'] ?? "غير معروف"),
+                    onTap: () => _openFile(file['url'] ?? ""),
+                  ),
+                ],
               );
             }
           },
         ),
-        ),
-        
-        
+), 
           ],
         ),
       ),

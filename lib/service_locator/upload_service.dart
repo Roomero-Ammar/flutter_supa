@@ -25,19 +25,20 @@ class UploadService {
   /// 🔹 رفع ملف إلى Supabase
   Future<String?> uploadFile(File file, String title) async {
     try {
-      final String fileExtension = file.path.split('.').last;
-      final String fileName = "$title-${DateTime.now().millisecondsSinceEpoch}.$fileExtension";
-      final String path = "uploads/$fileName";
-
-      await _supabase.storage.from('upload-file').upload(path, file,
-          fileOptions: const FileOptions(cacheControl: '3600', upsert: false));
-
-      return _supabase.storage.from('upload-file').getPublicUrl(path);
-    } catch (e) {
-      print("Upload Error: $e");
-      return null;
-    }
-  }
+     final String fileExtension = file.path.split('.').last;
+       final String fileName = "$title.$fileExtension"; // استخدام الاسم المخصص
+       final String path = "uploads/$fileName";
+ 
+       await _supabase.storage.from('upload-file').upload(path, file,
+           fileOptions: const FileOptions(cacheControl: '3600', upsert: false));
+ 
+       final String publicUrl = _supabase.storage.from('upload-file').getPublicUrl(path);
+       return publicUrl;
+     } catch (e) {
+       print("Upload Error: $e");
+       return null;
+     }
+   }
 
   /// 🔹 حفظ بيانات الملف في قاعدة البيانات
   Future<void> saveFileData(String title, String fileUrl, String fileType) async {
@@ -88,6 +89,39 @@ Future<List<Map<String, String>>?> getFiles() async {
   }
 }
 
+Future<bool> deleteFile(String fileUrl) async {
+  try {
+    // استخراج اسم الملف من الرابط
+    final Uri uri = Uri.parse(fileUrl);
+    final List<String> pathSegments = uri.pathSegments;
 
+    // تأكد من أن المسار يحتوي على الأجزاء اللازمة
+    if (pathSegments.length < 3) {
+      print("❌ خطأ: مسار الملف غير صالح.");
+      return false;
+    }
 
+    // بناء المسار الكامل للملف
+    final String fileName = pathSegments.last; // استخدم اسم الملف من الرابط
+    final String filePath = "uploads/$fileName"; // إضافة المسار "uploads/"
+
+    // محاولة حذف الملف
+    final response = await Supabase.instance.client
+        .storage
+        .from('upload-file')
+        .remove([filePath]);
+
+    // التحقق مما إذا كان الحذف ناجحًا
+    if (response.isEmpty) {
+      print("❌ فشل حذف الملف، ربما لا يوجد الملف في التخزين.");
+      return false;
+    }
+
+    print("✅ تم حذف الملف بنجاح: $filePath");
+    return true;
+  } catch (e) {
+    print("❌ خطأ أثناء الحذف: $e");
+    return false;
+  }
+}
 }
