@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_supa/service_locator/upload_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UploadFile extends StatefulWidget {
   @override
@@ -12,50 +12,110 @@ class _UploadFileState extends State<UploadFile> {
   final UploadService _uploadService = UploadService();
   final TextEditingController _titleController = TextEditingController();
 
-  File? _selectedFile;
-  String? _fileType;
+  List<File> _selectedFiles = [];
   bool _isUploading = false;
-  String? _uploadedFileUrl;
-
-  List<String> _imageUrls = []; // 🔹 قائمة لعرض الصور من Supabase
+  List<Map<String, String>> _uploadedFiles = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchImages(); // 🔹 تحميل الصور عند فتح الشاشة
+    _fetchFiles();
   }
 
-  /// 🔹 تحميل الصور من Supabase
-  Future<void> _fetchImages() async {
-    final List<String>? images = await _uploadService.getImages();
-    if (images != null) {
+  /// 🔹 تحميل جميع الملفات من Supabase
+Future<void> _fetchFiles() async {
+  final List<Map<String, String>>? files = await _uploadService.getFiles();
+  if (files != null) {
+    setState(() {
+      _uploadedFiles = files;
+    });
+
+    // 📌 عرض الملفات في BottomSheet عند جلبها
+    _showFilesBottomSheet();
+  }
+}
+void _showFilesBottomSheet() {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+      return Container(
+        padding: const EdgeInsets.all(16.0),
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: Column(
+          children: [
+            const Text(
+              "📂 الملفات المرفوعة",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const Divider(),
+            Expanded(
+              child: _uploadedFiles.isEmpty
+                  ? const Center(child: Text("لا توجد ملفات مرفوعة"))
+                  : GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: _uploadedFiles.length,
+                      itemBuilder: (context, index) {
+                        final file = _uploadedFiles[index];
+                        final fileType = file['type'] ?? "unknown";
+
+                        return GestureDetector(
+                          onTap: () => _openFile(file['url'] ?? ""),
+                          child: Column(
+                            children: [
+                              if (fileType == "image")
+                                Expanded(
+                                  child: Image.network(
+                                    file['url'] ?? "",
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.broken_image, color: Colors.red);
+                                    },
+                                  ),
+                                )
+                              else
+                                Icon(Icons.file_present, size: 50, color: Colors.blue),
+                              const SizedBox(height: 5),
+                              Text(
+                                file['name'] ?? "غير معروف",
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+        
+          ],
+        ),
+      );
+    },
+  );
+}
+
+
+
+  /// 🔹 اختيار ملفات متعددة
+  Future<void> _pickFiles() async {
+    final files = await _uploadService.pickFiles();
+    if (files != null) {
       setState(() {
-        _imageUrls = images;
+        _selectedFiles = files;
       });
     }
   }
 
-  /// 🔹 اختيار ملف
-  Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      allowedExtensions: ['jpg', 'png', 'pdf', 'mp4', 'mp3', 'wav'],
-      type: FileType.custom,
-    );
-
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      setState(() {
-        _selectedFile = file;
-        _fileType = _getFileType(file.path);
-      });
-    }
-  }
-
-  /// 🔹 رفع الملف
-  Future<void> _uploadFile() async {
-    if (_selectedFile == null || _titleController.text.isEmpty) {
+  /// 🔹 رفع الملفات المختارة
+  Future<void> _uploadFiles() async {
+    if (_selectedFiles.isEmpty || _titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("يرجى اختيار ملف وكتابة عنوان")),
+        const SnackBar(content: Text("يرجى اختيار ملفات وكتابة عنوان")),
       );
       return;
     }
@@ -64,34 +124,24 @@ class _UploadFileState extends State<UploadFile> {
       _isUploading = true;
     });
 
-    // ✅ استدعاء دالة `uploadFile` من `UploadService`
-    String? fileUrl = await _uploadService.uploadFile(_selectedFile!, _titleController.text);
-
-    if (fileUrl != null) {
-      await _uploadService.saveFileData(_titleController.text, fileUrl, _fileType ?? "unknown");
-
-      setState(() {
-        _uploadedFileUrl = fileUrl;
-        _isUploading = false;
-        _selectedFile = null;
-        _titleController.clear();
-      });
-
-      // 🔹 تحديث قائمة الصور بعد الرفع مباشرةً
-      _fetchImages();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("تم الرفع بنجاح!")),
-      );
-    } else {
-      setState(() {
-        _isUploading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("فشل في الرفع")),
-      );
+    for (File file in _selectedFiles) {
+      String? fileUrl = await _uploadService.uploadFile(file, _titleController.text);
+      if (fileUrl != null) {
+        await _uploadService.saveFileData(_titleController.text, fileUrl, _getFileType(file.path));
+      }
     }
+
+    setState(() {
+      _isUploading = false;
+      _selectedFiles.clear();
+      _titleController.clear();
+    });
+
+    _fetchFiles();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("تم رفع الملفات بنجاح!")),
+    );
   }
 
   /// 🔹 تحديد نوع الملف
@@ -109,71 +159,108 @@ class _UploadFileState extends State<UploadFile> {
     }
   }
 
+  /// 🔹 فتح الملف عند الضغط عليه
+  Future<void> _openFile(String url) async {
+    final Uri fileUri = Uri.parse(url);
+    if (await canLaunchUrl(fileUri)) {
+      await launchUrl(fileUri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("تعذر فتح الملف")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("رفع الملفات")),
+      appBar: AppBar(title: const Text("رفع وتصفح الملفات")),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _titleController,
-              decoration: const InputDecoration(labelText: "أدخل عنوان الملف"),
+              decoration: const InputDecoration(labelText: "أدخل عنوان الملفات"),
             ),
             const SizedBox(height: 20),
-            _selectedFile != null
-                ? Text("ملف مختار: ${_selectedFile!.path.split('/').last}")
+            _selectedFiles.isNotEmpty
+                ? Column(
+                    children: _selectedFiles
+                        .map((file) => Text("📄 ${file.path.split('/').last}"))
+                        .toList(),
+                  )
                 : const Text("لم يتم اختيار أي ملف"),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: _pickFile,
-                  child: const Text("اختيار ملف"),
+                  onPressed: _pickFiles,
+                  child: const Text("اختيار ملفات"),
                 ),
                 const SizedBox(width: 20),
                 ElevatedButton(
-                  onPressed: _isUploading ? null : _uploadFile,
+                  onPressed: _isUploading ? null : _uploadFiles,
                   child: _isUploading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text("رفع الملف"),
+                      ? const CircularProgressIndicator(strokeWidth: 2)
+                      : const Text("رفع الملفات"),
                 ),
               ],
             ),
             const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _fetchFiles,
+              icon: const Icon(Icons.folder),
+              label: const Text("تصفح الملفات"),
+            ),
             const Divider(),
-            const SizedBox(height: 10),
-            const Text(
-              "📸 الصور المرفوعة:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Expanded(
-              child: _imageUrls.isEmpty
-                  ? const Text("لا توجد صور مرفوعة")
-                  : GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemCount: _imageUrls.length,
-                      itemBuilder: (context, index) {
-                        return Image.network(
-                          _imageUrls[index],
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
-            ),
+            const Text("📂 الملفات المرفوعة:", style: TextStyle(fontWeight: FontWeight.bold)),
+              Expanded(
+          child: _uploadedFiles.isEmpty
+              ? const Text("لا توجد ملفات مرفوعة")
+              : GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: _uploadedFiles.length,
+          itemBuilder: (context, index) {
+            final file = _uploadedFiles[index];
+            final fileType = file['type'] ?? "unknown";
+        
+         if (fileType == "image") {
+  return GestureDetector(
+    onTap: () => _openFile(file['url'] ?? ""),
+    child: Image.network(
+      file['url'] ?? "",
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return const Icon(Icons.broken_image, color: Colors.red);
+      },
+    ),
+  );
+}
+else {
+              return ListTile(
+                leading: _getFileIcon(fileType),
+                title: Text(file['name'] ?? "غير معروف"),
+                onTap: () => _openFile(file['url'] ?? ""),
+              );
+            }
+          },
+        ),
+        ),
+        
+        
           ],
         ),
       ),
     );
+  }
+
+  Widget _getFileIcon(String fileType) {
+    return Icon(Icons.insert_drive_file, color: Colors.blue);
   }
 }
