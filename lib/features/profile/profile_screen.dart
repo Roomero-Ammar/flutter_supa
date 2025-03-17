@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_supa/auth/auth_service.dart';
+import 'package:flutter_supa/service_locator/auth_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   final AuthService _authService = AuthService();

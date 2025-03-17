@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_supa/auth/auth_service.dart';
+import 'package:flutter_supa/service_locator/auth_service.dart';
 import 'package:flutter_supa/core/helpers/extentsions.dart';
 import 'package:flutter_supa/core/routing/routes.dart';
 import 'package:flutter_supa/core/theming/theme_provider.dart';
@@ -112,6 +112,10 @@ class _HomeScreenState extends State<HomeScreen> {
  IconButton(icon: const Icon(Icons.man), onPressed: ()
           {
             Navigator.pushNamed(context,Routes.profileScreen);
+          },),
+          IconButton(icon: const Icon(Icons.file_download), onPressed: ()
+          {
+            Navigator.pushNamed(context,Routes.uploadFile);
           },),
           IconButton(
             icon: const Icon(Icons.logout),

@@ -7,6 +7,7 @@ import 'package:flutter_supa/features/onboarding/onboarding_screen.dart';
 import 'package:flutter_supa/features/profile/profile_screen.dart';
 import 'package:flutter_supa/features/sign_up/ui/sign_up_screen.dart';
 import 'package:flutter_supa/features/table/table_screen.dart';
+import 'package:flutter_supa/features/upload_file/upload_file.dart';
 
 class AppRouter {
   Route? generateRoute(RouteSettings settings) {
@@ -40,6 +41,10 @@ class AppRouter {
          case Routes.profileScreen:
         return MaterialPageRoute(
           builder: (_) =>  ProfileScreen(),
+        );
+           case Routes.uploadFile:
+        return MaterialPageRoute(
+          builder: (_) =>  UploadFile(),
         );
       case Routes.homeScreen:
         return MaterialPageRoute(

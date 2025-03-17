@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_supa/auth/auth_service.dart';
+import 'package:flutter_supa/service_locator/auth_service.dart';
 import 'package:flutter_supa/core/helpers/spacing.dart';
 import 'package:flutter_supa/core/routing/routes.dart';
 import '../../../core/theming/styles.dart';
