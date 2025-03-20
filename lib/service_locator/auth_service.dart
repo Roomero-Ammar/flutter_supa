@@ -1,3 +1,4 @@
+import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
@@ -35,6 +36,53 @@ class AuthService {
     }
   }
 
+
+  /// Sign In with Google
+  Future<void> signInWithGoogle() async {
+    try {
+      await _supabase.auth.signInWithOAuth(OAuthProvider.google);
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    }
+  }
+
+  /// Sign In with Facebook
+  Future<void> signInWithFacebook() async {
+    try {
+      await _supabase.auth.signInWithOAuth(OAuthProvider.facebook);
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    }
+  }
+
+  /// Sign In with GitHub
+  Future<void> signInWithGitHub() async {
+    try {
+      await _supabase.auth.signInWithOAuth(OAuthProvider.github);
+    } on AuthException catch (e) {
+      throw Exception(e.message);
+    }
+  }
+
+  Future<void> signInWithOAuth(OAuthProvider provider) async {
+  try {
+    await _supabase.auth.signInWithOAuth(provider);
+
+    // انتظر حتى يتم تحديث حالة المصادقة تلقائيًا
+    await Future.delayed(Duration(seconds: 3));
+
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      print("✅ OAuth login successful! User ID: ${user.id}");
+    } else {
+      print("❌ OAuth login failed!");
+    }
+  } on AuthException catch (e) {
+    throw Exception(e.message);
+  }
+}
+
+  
   /// Sign Out method
   Future<void> signOut() async {
     try {

@@ -35,6 +35,7 @@ Future<void> _fetchFiles() async {
     _showFilesBottomSheet();
   }
 }
+
 void _showFilesBottomSheet() {
   showModalBottomSheet(
     context: context,
@@ -212,7 +213,15 @@ void _deleteFile(String fileUrl) async {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: _pickFiles,
+  //                        onPressed: ()async {
+  //   final files = await _uploadService.pickFiles();
+  //   if (files != null) {
+  //     setState(() {
+  //       _selectedFiles = files;
+  //     });
+  //   }
+  // },
+                  onPressed: (_pickFiles),
                   child: const Text("اختيار ملفات"),
                 ),
                 const SizedBox(width: 20),

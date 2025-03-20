@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_supa/service_locator/auth_service.dart';
 import 'package:flutter_supa/core/helpers/spacing.dart';
 import 'package:flutter_supa/core/routing/routes.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theming/styles.dart';
 import '../../../core/widgets/app_text_button.dart';
 import 'widgets/dont_have_account_text.dart';
@@ -16,6 +17,7 @@ class LoginScreen extends StatelessWidget {
   final AuthService _authService = AuthService();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final SupabaseClient _supabase = Supabase.instance.client;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,34 @@ class LoginScreen extends StatelessWidget {
                         validateThenLogin(context);
                       },
                     ),
+                    verticalSpace(20),
+                    const Text(
+                      "Or continue with",
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    ),
+                    verticalSpace(10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildSocialLoginButton(
+                          icon: Icons.g_translate, // Google Icon
+                          color: Colors.red,
+                          onTap: () => _authService.signInWithOAuth(OAuthProvider.google),
+                        ),
+                        horizontalSpace(20),
+                        _buildSocialLoginButton(
+                          icon: Icons.facebook, // Facebook Icon
+                          color: Colors.blue,
+                          onTap: () => _authService.signInWithOAuth(OAuthProvider.facebook),
+                        ),
+                        horizontalSpace(20),
+                        _buildSocialLoginButton(
+                          icon: Icons.code, // GitHub Icon
+                          color: Colors.black,
+                          onTap: () => _authService.signInWithOAuth(OAuthProvider.github),
+                        ),
+                      ],
+                    ),
                     verticalSpace(15),
                     const TermsAndConditionsText(),
                     verticalSpace(30),
@@ -72,20 +102,55 @@ class LoginScreen extends StatelessWidget {
         );
 
         if (response?.user != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text("✅ Login successful!")));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("✅ Login successful!")),
+          );
           Navigator.of(context).pushNamed(Routes.homeScreen);
         }
       } catch (e) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("❌ Error: ${e.toString()}")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("❌ Error: ${e.toString()}")),
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("❌ Please fill all fields correctly.")),
       );
     }
+  }
+
+  /// تسجيل الدخول باستخدام OAuth لخدمات مثل Google و Facebook و GitHub
+ Future<void> signInWithOAuth(OAuthProvider provider) async {
+  try {
+    await _supabase.auth.signInWithOAuth(provider);
+    print("✅ Redirecting to provider: $provider");
+
+    // انتظر حتى يتم تحديث المستخدم بعد المصادقة
+    await Future.delayed(Duration(seconds: 3));
+
+    final user = _supabase.auth.currentUser;
+    if (user != null) {
+      print("✅ OAuth login successful! User ID: ${user.id}");
+    } else {
+      print("❌ OAuth login failed!");
+    }
+  } on AuthException catch (e) {
+    throw Exception(e.message);
+  }
+}
+ /// زر تسجيل الدخول عبر الشبكات الاجتماعية
+  Widget _buildSocialLoginButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: CircleAvatar(
+        radius: 25,
+        backgroundColor: color,
+        child: Icon(icon, color: Colors.white, size: 30),
+      ),
+    );
   }
 }
