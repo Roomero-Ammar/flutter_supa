@@ -7,6 +7,7 @@ class SignupForm extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController emailController;
   final TextEditingController passwordController;
+  final TextEditingController confirmPasswordController; 
 
   const SignupForm({
     super.key,
@@ -14,6 +15,7 @@ class SignupForm extends StatelessWidget {
     required this.nameController,
     required this.emailController,
     required this.passwordController,
+    required this.confirmPasswordController, 
   });
 
   @override
@@ -51,6 +53,21 @@ class SignupForm extends StatelessWidget {
             validator: (value) {
               if (value == null || value.length < 6) {
                 return 'Password must be at least 6 characters';
+              }
+              return null;
+            },
+          ),
+          verticalSpace(18),
+          AppTextFormField(
+            hintText: 'Confirm Password', 
+            controller: confirmPasswordController,
+            isObscureText: true,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please confirm your password';
+              }
+              if (value != passwordController.text) {
+                return 'Passwords is not the same';
               }
               return null;
             },

@@ -18,6 +18,7 @@ class SignUpScreen extends StatelessWidget {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController(); 
   final TextEditingController nameController = TextEditingController();
 
   @override
@@ -47,6 +48,7 @@ class SignUpScreen extends StatelessWidget {
                       nameController: nameController,
                       emailController: emailController,
                       passwordController: passwordController,
+                      confirmPasswordController: confirmPasswordController,
                     ),
                     verticalSpace(40),
                     AppTextButton(
