@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_supa/service_locator/auth_service.dart';
 import 'package:flutter_supa/core/helpers/spacing.dart';
 import 'package:flutter_supa/core/routing/routes.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/theming/styles.dart';
 import '../../../core/widgets/app_text_button.dart';
@@ -61,19 +62,19 @@ class LoginScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildSocialLoginButton(
-                          icon: Icons.g_translate, // Google Icon
+                          icon: FontAwesomeIcons.google, // Google Icon
                           color: Colors.red,
                           onTap: () => _authService.signInWithOAuth(OAuthProvider.google),
                         ),
                         horizontalSpace(20),
                         _buildSocialLoginButton(
-                          icon: Icons.facebook, // Facebook Icon
+                          icon: FontAwesomeIcons.facebookF,  // Facebook Icon
                           color: Colors.blue,
                           onTap: () => _authService.signInWithOAuth(OAuthProvider.facebook),
                         ),
                         horizontalSpace(20),
                         _buildSocialLoginButton(
-                          icon: Icons.code, // GitHub Icon
+                          icon: FontAwesomeIcons.github, // GitHub Icon
                           color: Colors.black,
                           onTap: () => _authService.signInWithOAuth(OAuthProvider.github),
                         ),

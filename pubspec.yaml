@@ -35,6 +35,7 @@ dependencies:
     sdk: flutter
   flutter_pdfview: ^1.4.0
   flutter_screenutil: ^5.9.3
+  font_awesome_flutter: ^10.8.0
   path: ^1.9.1
   provider: ^6.1.2
   shared_preferences: ^2.5.2
